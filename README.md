@@ -1,1 +1,1 @@
-# travian-only-winners
+# travian-winners
