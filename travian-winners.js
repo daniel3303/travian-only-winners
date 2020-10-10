@@ -28,11 +28,11 @@ let log = (text) => console.log(text);
 
 const time = () => {
     return parseInt(new Date().getTime() / 1000);
-}
+};
 
 const get_crop = () => {
     return isNaN(parseInt($("#l4").text().replace(" ", ""))) ? 0 : parseInt($("#l4").text().replace(" ", ""));
-}
+};
 
 const get_barracks_time = () => {
     return isNaN(parseInt($(".under_progress tbody tr:nth-last-child(2) span.timer").attr("value"))) ? 0 : parseInt($(".under_progress tbody tr:nth-last-child(2) span.timer").attr("value"));
@@ -42,15 +42,15 @@ const do_barracks_troops = (desiredQuantity) => {
     let quantity = Math.min(get_barracks_max_troops(), desiredQuantity);
     $("#favouriteTroops .cta input").first().val(quantity);
     $("#favouriteTroops .cta input").first().closest("form").submit();
-}
+};
 
 const get_barracks_max_troops = () => {
     return isNaN(parseInt($("#favouriteTroops .cta a").first().text())) ? 0 : parseInt($("#favouriteTroops .cta a").first().text());
-}
+};
 
 const set_barracks_troops = () => {
     return isNaN(parseInt($("#favouriteTroops .cta a").first().text())) ? 0 : parseInt($("#favouriteTroops .cta a").first().text());
-}
+};
 
 const run = async (store) => {
     let farmLists = store.getState().settings.farmLists;
@@ -58,21 +58,22 @@ const run = async (store) => {
     let tasks = store.getState().settings.tasks;
     var worked = false;
 
-    await sleep(random_int(0,3000));
+    await sleep(random_int(0, 3000));
 
     //FIXME random order
 
     // Check farm lists
-    if(tasks.checkedFarmLists == false){
+    if (tasks.checkedFarmLists == false) {
         let listsArr = Object.values(farmLists);
-        for(var i = 0; i < listsArr.length; i++){
+        for (var i = 0; i < listsArr.length; i++) {
             let list = listsArr[i];
-            if(list.enabled && list.lastSent + list.minInterval <= time()){
-                if(store.getState().state.page != FARM_LIST_PAGE){
+            if (list.enabled && list.lastSent + list.minInterval <= time()) {
+                if (store.getState().state.page != FARM_LIST_PAGE) {
                     worked = true;
                     return go_to_page(FARM_LIST_PAGE);
-                };
-                log("A enviar lista "+list.name);
+                }
+                ;
+                log("A enviar lista " + list.name);
                 store.dispatch({type: "SENT_FARM_LIST", payload: list});
                 await send_farm_list(list);
                 worked = true;
@@ -80,48 +81,51 @@ const run = async (store) => {
             }
         }
 
-        if(worked == false){
+        if (worked == false) {
             store.dispatch({type: "CHECKED_FARM_LISTS"});
-        }else{
+        } else {
             return;
         }
     }
 
     // Check barracks troops
-    if(tasks.checkedBarracks == false){
-        if(barracks.maxQuantity > 0 && barracks.minCrop < get_crop()){
-            if(store.getState().state.page != BARRACKS_PAGE){
+    if (tasks.checkedBarracks == false) {
+        if (barracks.maxQuantity > 0 && barracks.minCrop < get_crop()) {
+            if (store.getState().state.page != BARRACKS_PAGE) {
                 worked = true;
                 return go_to_page(BARRACKS_PAGE);
-            };
+            }
+            ;
 
-            if(get_barracks_time() <= barracks.minQueueTime && get_barracks_max_troops() > 0){
+            if (get_barracks_time() <= barracks.minQueueTime && get_barracks_max_troops() > 0) {
                 let quantity = Math.min(get_barracks_max_troops(), barracks.maxQuantity);
-                if(quantity > 0){
-                    log("A fazer "+quantity+" tropas.")
+                if (quantity > 0) {
+                    log("A fazer " + quantity + " tropas.")
                     do_barracks_troops(quantity);
-                }else{
+                } else {
                     log("Sem recursos para fazer tropas.");
                 }
-            };
+            }
+            ;
 
             store.dispatch({type: "CHECKED_BARRACKS"});
             worked = true;
             return;
-        }else{
-            if(barracks.minCrop > get_crop()){
+        } else {
+            if (barracks.minCrop > get_crop()) {
                 log("Pouco cereal. Saltar verificação de quartel.");
             }
         }
     }
 
     // Return to dorf2
-    if(store.getState().state.page != DORF2_PAGE){
+    if (store.getState().state.page != DORF2_PAGE) {
         worked = true;
         return go_to_page(DORF2_PAGE);
-    };
+    }
+    ;
 
-    if(worked){
+    if (worked) {
         return true;
     }
 
@@ -131,118 +135,118 @@ const run = async (store) => {
 };
 
 function random_int(min, max) { // min and max included
-        return Math.floor(Math.random() * (max - min + 1) + min);
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 // Send farm list utils
-function select_green_farms(farmList){
-    var $tableRows = $("#"+farmList.id).find(".raidListContent table tr.slotRow");
-    for(var index = 0; index < $tableRows.get().length; index++){
+function select_green_farms(farmList) {
+    var $tableRows = $("#" + farmList.id).find(".raidListContent table tr.slotRow");
+    for (var index = 0; index < $tableRows.get().length; index++) {
         var $row = $($tableRows.get(index));
-        if($row.find(".lastRaid img.iReport.iReport1").length >= 1 && !$row.find(".lastRaid img.iReport.iReport1").is(":checked")){
+        if ($row.find(".lastRaid img.iReport.iReport1").length >= 1 && !$row.find(".lastRaid img.iReport.iReport1").is(":checked")) {
             $row.find(".checkbox input.markSlot").click();
         }
     }
 }
 
-function select_yellow_farms(farmList){
-    var $tableRows = $("#"+farmList.id).find(".raidListContent table tr.slotRow");
-    for(var index = 0; index < $tableRows.get().length; index++){
+function select_yellow_farms(farmList) {
+    var $tableRows = $("#" + farmList.id).find(".raidListContent table tr.slotRow");
+    for (var index = 0; index < $tableRows.get().length; index++) {
         var $row = $($tableRows.get(index));
-        if($row.find(".lastRaid img.iReport.iReport2").length >= 1 && !$row.find(".lastRaid img.iReport.iReport2").is(":checked")){
+        if ($row.find(".lastRaid img.iReport.iReport2").length >= 1 && !$row.find(".lastRaid img.iReport.iReport2").is(":checked")) {
             $row.find(".checkbox input.markSlot").click();
         }
     }
 }
 
-function select_red_farms(farmList){
-    var $tableRows = $("#"+farmList.id).find(".raidListContent table tr.slotRow");
-    for(var index = 0; index < $tableRows.get().length; index++){
+function select_red_farms(farmList) {
+    var $tableRows = $("#" + farmList.id).find(".raidListContent table tr.slotRow");
+    for (var index = 0; index < $tableRows.get().length; index++) {
         var $row = $($tableRows.get(index));
-        if($row.find(".lastRaid img.iReport.iReport3").length >= 1 && !$row.find(".lastRaid img.iReport.iReport3").is(":checked")){
+        if ($row.find(".lastRaid img.iReport.iReport3").length >= 1 && !$row.find(".lastRaid img.iReport.iReport3").is(":checked")) {
             $row.find(".checkbox input.markSlot").click();
         }
     }
 }
 
-function select_not_visited_farms(farmList){
-    var $tableRows = $("#"+farmList.id).find(".raidListContent table tr.slotRow");
-    for(var index = 0; index < $tableRows.get().length; index++){
+function select_not_visited_farms(farmList) {
+    var $tableRows = $("#" + farmList.id).find(".raidListContent table tr.slotRow");
+    for (var index = 0; index < $tableRows.get().length; index++) {
         var $row = $($tableRows.get(index));
-        if($row.find(".lastRaid img.iReport").length == 0 && !$row.find(".lastRaid img.iReport.iReport1").is(":checked")){
+        if ($row.find(".lastRaid img.iReport").length == 0 && !$row.find(".lastRaid img.iReport.iReport1").is(":checked")) {
             $row.find(".checkbox input.markSlot").click();
         }
     }
 }
 
-function select_all_farms(farmList){
-    var $allCheckBox = $("#"+farmList.id).find("input[type=checkbox].markAll");
+function select_all_farms(farmList) {
+    var $allCheckBox = $("#" + farmList.id).find("input[type=checkbox].markAll");
     $allCheckBox.click();
 }
 
-async function open_farm_list(farmList){
-    let $farmList = $("#"+farmList.id);
+async function open_farm_list(farmList) {
+    let $farmList = $("#" + farmList.id);
     let collapsed = $farmList.find(".expandCollapse").hasClass("collapsed");
-    if(!collapsed) return;
+    if (!collapsed) return;
 
     $farmList.find(".expandCollapse").click();
 
-    while(collapsed){
+    while (collapsed) {
         await sleep(100);
         collapsed = $farmList.find(".expandCollapse").hasClass("collapsed");
     }
 
     // Wait some time after the farm list is opened. Pretending to be a human
-    await sleep(random_int(2000,3500))
+    await sleep(random_int(2000, 3500))
 }
 
 const send_farm_list = async (farmList) => {
-        await open_farm_list(farmList);
-        if(!farmList.attackNoInfo && !farmList.attackGreen && !farmList.attackYellow && !farmList.attackRed){
-            select_all_farms(farmList);
-        }
-        if(farmList.attackNoInfo){
-            select_not_visited_farms(farmList);
-        }
-        if(farmList.attackGreen){
-            select_green_farms(farmList)
-        }
-        if(farmList.attackYellow){
-            select_yellow_farms(farmList)
-        }
-        if(farmList.attackRed){
-            select_red_farms(farmList)
-        }
-
-        $("#"+farmList.id).find(".raidListContent .buttonWrapper button[type=submit].startButton").click();
+    await open_farm_list(farmList);
+    if (!farmList.attackNoInfo && !farmList.attackGreen && !farmList.attackYellow && !farmList.attackRed) {
+        select_all_farms(farmList);
+    }
+    if (farmList.attackNoInfo) {
+        select_not_visited_farms(farmList);
+    }
+    if (farmList.attackGreen) {
+        select_green_farms(farmList)
+    }
+    if (farmList.attackYellow) {
+        select_yellow_farms(farmList)
+    }
+    if (farmList.attackRed) {
+        select_red_farms(farmList)
     }
 
-const save = async(name, value) => {
-    if(typeof GM_setValue == "function"){
+    $("#" + farmList.id).find(".raidListContent .buttonWrapper button[type=submit].startButton").click();
+}
+
+const save = async (name, value) => {
+    if (typeof GM_setValue == "function") {
         GM_setValue(name, value);
-    }else{
+    } else {
         await GM.setValue(name, value);
     }
 }
 
-const load = async(name) => {
-    if(typeof GM_setValue == "function"){
+const load = async (name) => {
+    if (typeof GM_setValue == "function") {
         return GM_getValue(name);
     }
     return await GM.getValue(name);
-}
+};
 
-const save_tab = async(data) => {
+const save_tab = async (data) => {
     GM_saveTab(data);
-}
+};
 
-const load_tab = async() => {
-    return new Promise((resolutionFunc,rejectionFunc) => {
+const load_tab = async () => {
+    return new Promise((resolutionFunc, rejectionFunc) => {
         GM_getTab((o) => {
             resolutionFunc(o);
         });
     });
-}
+};
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -251,68 +255,68 @@ async function sleep(ms) {
 const update_interface = (state) => {
     let $elem = $("#travian-farm-plus").length > 0 ? $("#travian-farm-plus") : $("body").prepend(`<div id="travian-farm-plus" style="background-color: white; position: absolute; top: 0; left: 0; z-index: 99999; padding: 12px;"></div>`).find("#travian-farm-plus");
     $elem.html("");
-    if(state.settings.hide){
+    if (state.settings.hide) {
         $elem.append(`<button class="toggle-hide green textButtonV1" style="margin: -12px;">+</button>`);
-    }else{
+    } else {
         $elem.append(`
-<button class="toggle-hide green textButtonV1" style="margin-left: auto;display: block;">Fechar</button>
-<h1 style="color: #F88C1F;">Travian só para vencedores</h1>
-<p><strong>Ligado: </strong>${state.tab.running ? "Sim" : "Não"}</p>
-<input type="number" class="min-pause" min="1" value="${state.settings.minPauseTime / 60}" /> Tempo mínimo de pausa<br />
-<input type="number" class="max-pause" min="1" value="${state.settings.maxPauseTime / 60}"/> Tempo máximo de pausa<br />
-<br />
-<button class="toggle-run green textButtonV1">${state.tab.running ? "Desligar" : "Ligar"}</button>
-<button class="run-now green textButtonV1">Trabalhar já</button>
-<p>Próxima acção ${moment.unix(state.settings.lastActivityTime + state.settings.pauseTime).fromNow()}</p>
-<hr />
-<h4>Listas de farms - <a href="/build.php?tt=99&id=39">Procurar novas listas</a></h4>
-${Object.values(state.settings.farmLists).map(list => `
-<h3 style="${list.enabled ? "color:green" : "color:red" }">${list.name}</h3>
-<input type="checkbox" class="toggle-list-bool" prop="attackNoInfo" list-id="${list.id}" ${list.attackNoInfo ? "checked" : ""}/> <span style="color:blue">Sem informação?</span>
-<input type="checkbox" class="toggle-list-bool" prop="attackGreen" list-id="${list.id}" ${list.attackGreen ? "checked" : ""}/> <span style="color:green">Verdes?</span>
-<input type="checkbox" class="toggle-list-bool" prop="attackYellow"" list-id="${list.id}" ${list.attackYellow ? "checked" : ""}/> <span style="color:#afa01a">Amarelos?</span>
-<input type="checkbox" class="toggle-list-bool" prop="attackRed" list-id="${list.id}" ${list.attackRed ? "checked" : ""}/> <span style="color:red">Vermelhos?</span><br />
-<input type="number" class="list-min-interval" min="5" list-id="${list.id}" value="${list.minInterval / 60}"/> Tempo mínimo de espera
-<br />
-<p>Enviada ${moment.unix(list.lastSent).fromNow()}. Próximo envio ${moment.unix(Math.max(list.lastSent + list.minInterval, state.settings.lastActivityTime + state.settings.pauseTime)).fromNow()}</p>
-<button class="toggle-list green textButtonV1" list-id="${list.id}">${list.enabled ? "Desactivar" : "Activar" }</button>
-`).join('')}
-<hr />
-<h4>Quartel</h4>
-Fazer até <input type="number" class="barracks-quantity" min="0" value="${state.settings.barracks.maxQuantity}"/> tropas <br />
-se a fila for menor que <input type="number" class="barracks-min-queue" min="0" value="${state.settings.barracks.minQueueTime / 60}"/> minutos<br />
-e o celeiro tiver mais do que <input type="number" class="barracks-min-crop" min="0" value="${state.settings.barracks.minCrop}"/> cereal.<br />
-<strong>No quartel colocar a tropa desejada como favorita.</strong>
-<hr />
-<h4>Actividade</h4>
-<div style="max-height: 128px; overflow-y: scroll;">
-${state.settings.logs.map(log => `<p style="margin-bottom: 2px; margin-top: 0;">${moment.unix(log.time).format('DD/MMMM, HH:mm:ss')} - ${log.log}</p>`).join('')}
-</div>
-`);
+            <button class="toggle-hide green textButtonV1" style="margin-left: auto;display: block;">Fechar</button>
+            <h1 style="color: #F88C1F;">Travian só para vencedores</h1>
+            <p><strong>Ligado: </strong>${state.tab.running ? "Sim" : "Não"}</p>
+            <input type="number" class="min-pause" min="1" value="${state.settings.minPauseTime / 60}" /> Tempo mínimo de pausa<br />
+            <input type="number" class="max-pause" min="1" value="${state.settings.maxPauseTime / 60}"/> Tempo máximo de pausa<br />
+            <br />
+            <button class="toggle-run green textButtonV1">${state.tab.running ? "Desligar" : "Ligar"}</button>
+            <button class="run-now green textButtonV1">Trabalhar já</button>
+            <p>Próxima acção ${moment.unix(state.settings.lastActivityTime + state.settings.pauseTime).fromNow()}</p>
+            <hr />
+            <h4>Listas de farms - <a href="/build.php?tt=99&id=39">Procurar novas listas</a></h4>
+            ${Object.values(state.settings.farmLists).map(list => `
+            <h3 style="${list.enabled ? "color:green" : "color:red"}">${list.name}</h3>
+            <input type="checkbox" class="toggle-list-bool" prop="attackNoInfo" list-id="${list.id}" ${list.attackNoInfo ? "checked" : ""}/> <span style="color:blue">Sem informação?</span>
+            <input type="checkbox" class="toggle-list-bool" prop="attackGreen" list-id="${list.id}" ${list.attackGreen ? "checked" : ""}/> <span style="color:green">Verdes?</span>
+            <input type="checkbox" class="toggle-list-bool" prop="attackYellow"" list-id="${list.id}" ${list.attackYellow ? "checked" : ""}/> <span style="color:#afa01a">Amarelos?</span>
+            <input type="checkbox" class="toggle-list-bool" prop="attackRed" list-id="${list.id}" ${list.attackRed ? "checked" : ""}/> <span style="color:red">Vermelhos?</span><br />
+            <input type="number" class="list-min-interval" min="5" list-id="${list.id}" value="${list.minInterval / 60}"/> Tempo mínimo de espera
+            <br />
+            <p>Enviada ${moment.unix(list.lastSent).fromNow()}. Próximo envio ${moment.unix(Math.max(list.lastSent + list.minInterval, state.settings.lastActivityTime + state.settings.pauseTime)).fromNow()}</p>
+            <button class="toggle-list green textButtonV1" list-id="${list.id}">${list.enabled ? "Desactivar" : "Activar"}</button>
+            `).join('')}
+            <hr />
+            <h4>Quartel</h4>
+            Fazer até <input type="number" class="barracks-quantity" min="0" value="${state.settings.barracks.maxQuantity}"/> tropas <br />
+            se a fila for menor que <input type="number" class="barracks-min-queue" min="0" value="${state.settings.barracks.minQueueTime / 60}"/> minutos<br />
+            e o celeiro tiver mais do que <input type="number" class="barracks-min-crop" min="0" value="${state.settings.barracks.minCrop}"/> cereal.<br />
+            <strong>No quartel colocar a tropa desejada como favorita.</strong>
+            <hr />
+            <h4>Actividade</h4>
+            <div style="max-height: 128px; overflow-y: scroll;">
+            ${state.settings.logs.map(log => `<p style="margin-bottom: 2px; margin-top: 0;">${moment.unix(log.time).format('DD/MMMM, HH:mm:ss')} - ${log.log}</p>`).join('')}
+            </div>
+        `);
     }
 
-    if( state.state.timeToNextRun > 0){
-        $("title").text($("title").text().split(" - ")[0] + " - "+state.state.timeToNextRun+"s");
+    if (state.state.timeToNextRun > 0) {
+        $("title").text($("title").text().split(" - ")[0] + " - " + state.state.timeToNextRun + "s");
     }
 };
 
 const click_building = (gid) => {
-    return $(".buildingSlot.g"+gid+" .clickShape path").click();
-}
+    return $(".buildingSlot.g" + gid + " .clickShape path").click();
+};
 
 const get_current_page = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const file = window.location.pathname.replace("/", "");
 
-    switch(file){
+    switch (file) {
         case 'build.php':
-            if(urlParams.get('tt') == "99" && (urlParams.get('id') == "39" || urlParams.get("gid") == "16")){
+            if (urlParams.get('tt') == "99" && (urlParams.get('id') == "39" || urlParams.get("gid") == "16")) {
                 return FARM_LIST_PAGE;
             }
-            if(urlParams.get('id') == "39" || urlParams.get("gid") == "16"){
+            if (urlParams.get('id') == "39" || urlParams.get("gid") == "16") {
                 return RALLY_POINT_PAGE;
             }
-            if($("#build.gid"+BUILDINGS.BARRACKS).length > 0){
+            if ($("#build.gid" + BUILDINGS.BARRACKS).length > 0) {
                 return BARRACKS_PAGE;
             }
         case 'dorf2.php':
@@ -323,46 +327,46 @@ const get_current_page = () => {
 };
 
 const go_to_page = (page) => {
-    if(page == RALLY_POINT_PAGE){
-        if(get_current_page() != DORF2_PAGE){
+    if (page == RALLY_POINT_PAGE) {
+        if (get_current_page() != DORF2_PAGE) {
             return go_to_page(DORF2_PAGE);
         }
         log("A ir para o PRM.");
         click_building(BUILDINGS.RALLY_POINT);
     }
-    if(page == FARM_LIST_PAGE){
-        if(get_current_page() != RALLY_POINT_PAGE){
+    if (page == FARM_LIST_PAGE) {
+        if (get_current_page() != RALLY_POINT_PAGE) {
             return go_to_page(RALLY_POINT_PAGE);
         }
         log("A ir para a lista de farms.");
         window.location.href = window.location.origin + "/build.php?tt=99&id=39";
     }
-    if(page == BARRACKS_PAGE){
-        if(get_current_page() != DORF2_PAGE){
+    if (page == BARRACKS_PAGE) {
+        if (get_current_page() != DORF2_PAGE) {
             return go_to_page(DORF2_PAGE);
         }
         log("A ir para o quartel.");
         click_building(BUILDINGS.BARRACKS);
     }
-    if(page == DORF2_PAGE){
+    if (page == DORF2_PAGE) {
         log("A ir para o centro da aldeia.");
         window.location.href = window.location.origin + "/dorf2.php";
     }
 };
 
 const slugify = (text) => {
-  return text.toString().toLowerCase()
-    .replace(/\s+/g, '-')           // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-    .replace(/^-+/, '')             // Trim - from start of text
-    .replace(/-+$/, '');            // Trim - from end of text
+    return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')           // Replace spaces with -
+        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+        .replace(/^-+/, '')             // Trim - from start of text
+        .replace(/-+$/, '');            // Trim - from end of text
 }
 
 const get_farm_lists = () => {
     $farmLists = $("#raidList .raidList");
     farmLists = {};
-    $farmLists.each(function(index, elem){
+    $farmLists.each(function (index, elem) {
         let id = $(elem).attr("id");
         let name = $(elem).closest(".villageWrapper").find('.villageName').text().trim() + " - " + $(elem).find(".listName .value").text().trim(); // Village name + farm list name
         farmLists[id] = {
@@ -371,7 +375,7 @@ const get_farm_lists = () => {
             slug: slugify(name),
             name: name,
             lastSent: 0,
-            minInterval: 60*60,
+            minInterval: 60 * 60,
             attackNoInfo: false,
             attackGreen: true,
             attackYellow: false,
@@ -394,10 +398,10 @@ const SETTINGS_INITIAL_STATE = {
         checkedFarmLists: false,
         checkedBarracks: false,
     },
-    minPauseTime: 50*60,
-    maxPauseTime: 70*60,
+    minPauseTime: 50 * 60,
+    maxPauseTime: 70 * 60,
     lastActivityTime: 0,
-    pauseTime: 60*60,
+    pauseTime: 60 * 60,
     hide: false,
 };
 
@@ -416,13 +420,13 @@ const BARRACKS_PAGE = "BARRACKS_PAGE";
 const DORF2_PAGE = "DORF2_PAGE";
 const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
 
-(async function() {
+(async function () {
     let Redux = window.Redux;
     let loop = null;
 
     /* REDUCERS */
     let settingsReducer = (state = SETTINGS_INITIAL_STATE, action) => {
-        switch(action.type){
+        switch (action.type) {
             case 'LOAD_SETTINGS':
                 return {...state, ...action.payload};
             case 'CHECKED_FARM_LISTS':
@@ -447,15 +451,16 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
             case 'SET_BARRACKS_MIN_CROP':
                 return {...state, barracks: {...state.barracks, minCrop: action.payload}};
             case 'WORK_FINISHED':
-                return {...state,
-                        lastActivityTime: time(),
-                        pauseTime: random_int(state.minPauseTime, state.maxPauseTime),
-                        tasks: {
-                            ...state.tasks,
-                            checkedFarmLists: false,
-                            checkedBarracks: false
-                        }
-                      }
+                return {
+                    ...state,
+                    lastActivityTime: time(),
+                    pauseTime: random_int(state.minPauseTime, state.maxPauseTime),
+                    tasks: {
+                        ...state.tasks,
+                        checkedFarmLists: false,
+                        checkedBarracks: false
+                    }
+                }
             case 'ADD_FARM_LIST':
                 return {...state, farmLists: {...state.farmLists, [action.payload.id]: action.payload}};
             case 'REMOVE_FARM_LIST':
@@ -470,7 +475,7 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
                 return {...state};
             case 'SENT_FARM_LIST':
                 state.farmLists[action.payload.id].lastSent = time();
-                return {...state };
+                return {...state};
             case 'TOGGLE_FARM_LIST':
                 state.farmLists[action.payload].enabled = !state.farmLists[action.payload].enabled
                 return {...state};
@@ -478,19 +483,19 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
                 return {...state, lastActivityTime: 0};
             case 'SET_MIN_PAUSE':
                 let maxPauseTime = state.maxPauseTime;
-                if(action.payload <= 60){
+                if (action.payload <= 60) {
                     action.payload = 60
                 }
-                if(action.payload >= maxPauseTime - 60){
+                if (action.payload >= maxPauseTime - 60) {
                     maxPauseTime = action.payload + 60;
                 }
                 return {...state, minPauseTime: action.payload, maxPauseTime};
             case 'SET_MAX_PAUSE':
-                let pauseTime =  state.pauseTime;
-                if(action.payload <= state.minPauseTime + 60){
+                let pauseTime = state.pauseTime;
+                if (action.payload <= state.minPauseTime + 60) {
                     action.payload = state.minPauseTime + 60
                 }
-                if(pauseTime > action.payload){
+                if (pauseTime > action.payload) {
                     pauseTime = action.payload;
                 }
                 return {...state, maxPauseTime: action.payload, pauseTime};
@@ -501,7 +506,7 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
     };
 
     let stateReducer = (state = STATE_INITIAL_STATE, action) => {
-        switch(action.type){
+        switch (action.type) {
             case 'SET_PAGE':
                 return {...state, page: action.payload};
             case 'SET_TIME_TO_NEXT_RUN':
@@ -513,7 +518,7 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
     };
 
     let tabReducer = (state = TAB_INITIAL_STATE, action) => {
-        switch(action.type){
+        switch (action.type) {
             case 'LOAD_TAB':
                 return {...state, ...action.payload};
             case 'RUN':
@@ -523,8 +528,8 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
         }
 
     };
-    let rootReducer = Redux.combineReducers({settings: settingsReducer, tab: tabReducer, state: stateReducer})
-    let store = Redux.createStore(rootReducer)
+    let rootReducer = Redux.combineReducers({settings: settingsReducer, tab: tabReducer, state: stateReducer});
+    let store = Redux.createStore(rootReducer);
 
     // Override the log function
     log = ((store) => (text) => {
@@ -546,16 +551,19 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
     // Subscribe running state
     const checkRun = async () => {
         let state = store.getState();
-        if(state.settings.lastActivityTime + state.settings.pauseTime <= time()){
+        if (state.settings.lastActivityTime + state.settings.pauseTime <= time()) {
             await run(store);
         }
-        store.dispatch({type: "SET_TIME_TO_NEXT_RUN", payload: state.settings.pauseTime + state.settings.lastActivityTime - time()})
+        store.dispatch({
+            type: "SET_TIME_TO_NEXT_RUN",
+            payload: state.settings.pauseTime + state.settings.lastActivityTime - time()
+        });
         loop = setTimeout(checkRun, random_int(3500, 5000));
     };
     store.subscribe(() => {
-        if(store.getState().tab.running && !loop){
+        if (store.getState().tab.running && !loop) {
             loop = setTimeout(checkRun, random_int(3500, 5000));
-        }else if(!store.getState().tab.running && loop){
+        } else if (!store.getState().tab.running && loop) {
             loop = clearTimeout(loop);
         }
     });
@@ -569,9 +577,6 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
 
     // Finds current page
     store.dispatch({type: 'SET_PAGE', payload: get_current_page()});
-
-
-
 
 
     // Interface event listeners
@@ -592,11 +597,17 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
     });
 
     $(document).on("change", ".min-pause", async (e) => {
-        store.dispatch({type: 'SET_MIN_PAUSE', payload: isNaN(parseInt($(e.target).val())) ? 50*60 : parseInt($(e.target).val()) * 60 });
+        store.dispatch({
+            type: 'SET_MIN_PAUSE',
+            payload: isNaN(parseInt($(e.target).val())) ? 50 * 60 : parseInt($(e.target).val()) * 60
+        });
     });
 
     $(document).on("change", ".max-pause", async (e) => {
-        store.dispatch({type: 'SET_MAX_PAUSE', payload: isNaN(parseInt($(e.target).val())) ? 50*60 : parseInt($(e.target).val()) * 60 });
+        store.dispatch({
+            type: 'SET_MAX_PAUSE',
+            payload: isNaN(parseInt($(e.target).val())) ? 50 * 60 : parseInt($(e.target).val()) * 60
+        });
     });
 
     $(document).on("click", ".toggle-list-bool", async (e) => {
@@ -629,20 +640,20 @@ const RALLY_POINT_PAGE = "RALLY_POINT_PAGE";
 
 
     // Page specific actions
-    if(store.getState().state.page == FARM_LIST_PAGE){
+    if (store.getState().state.page == FARM_LIST_PAGE) {
         let farmLists = get_farm_lists();
         let stateLists = store.getState().settings.farmLists;
 
         // Add new farm lists
         Object.values(farmLists).forEach((elem) => {
-            if(typeof stateLists[elem.id] === "undefined"){
+            if (typeof stateLists[elem.id] === "undefined") {
                 store.dispatch({type: 'ADD_FARM_LIST', payload: elem});
             }
         });
 
         // Remove non existent farm lists
         Object.values(stateLists).forEach((elem) => {
-            if(typeof farmLists[elem.id] === "undefined"){
+            if (typeof farmLists[elem.id] === "undefined") {
                 store.dispatch({type: 'REMOVE_FARM_LIST', payload: elem});
             }
         });
