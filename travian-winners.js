@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Travian - Only winners
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Extras para a lista de farms do Travian.
 // @author       Daniel Oliveira
 // @match        https://*.travian.com/*
@@ -191,6 +191,9 @@ async function open_farm_list(farmList){
         await sleep(100);
         collapsed = $farmList.find(".expandCollapse").hasClass("collapsed");
     }
+
+    // Wait some time after the farm list is opened. Pretending to be a human
+    await sleep(random_int(2000,3500))
 }
 
 const send_farm_list = async (farmList) => {
