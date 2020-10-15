@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Travian - Only winners
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Extras para a lista de farms do Travian.
 // @author       Daniel Oliveira
 // @match        https://*.travian.com/*
@@ -70,7 +70,12 @@ const run = async (store) => {
             if (list.enabled && list.lastSent + list.minInterval <= time()) {
                 if (store.getState().state.page != FARM_LIST_PAGE) {
                     worked = true;
-                    return go_to_page(FARM_LIST_PAGE);
+                    try{
+                        return go_to_page(FARM_LIST_PAGE);
+                    }catch(e){
+                        log("A aldeia não tem PRM. A saltar farming...");
+                        store.dispatch({type: "CHECKED_FARM_LISTS"});
+                    }
                 }
                 ;
                 log("A enviar lista " + list.name);
@@ -93,9 +98,13 @@ const run = async (store) => {
         if (barracks.maxQuantity > 0 && barracks.minCrop < get_crop()) {
             if (store.getState().state.page != BARRACKS_PAGE) {
                 worked = true;
-                return go_to_page(BARRACKS_PAGE);
+                try{
+                    return go_to_page(BARRACKS_PAGE);
+                }catch(e){
+                    log("A aldeia não tem quartel. A saltar treino...");
+                    store.dispatch({type: "CHECKED_BARRACKS"});
+                }
             }
-            ;
 
             if (get_barracks_time() <= barracks.minQueueTime && get_barracks_max_troops() > 0) {
                 let quantity = Math.min(get_barracks_max_troops(), barracks.maxQuantity);
@@ -301,6 +310,9 @@ const update_interface = (state) => {
 };
 
 const click_building = (gid) => {
+    if($(".buildingSlot.g" + gid + " .clickShape path").length === 0){
+        throw new "O edifício não foi encontrado.";
+    }
     return $(".buildingSlot.g" + gid + " .clickShape path").click();
 };
 
@@ -326,6 +338,9 @@ const get_current_page = () => {
     }
 };
 
+/*
+ Throws error if the building does not exists.
+*/
 const go_to_page = (page) => {
     if (page == RALLY_POINT_PAGE) {
         if (get_current_page() != DORF2_PAGE) {
